@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime & Manga Recommender</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Light mode variables */
+            --bg-color: #f6f8fa;
+            --container-bg: white;
+            --text-color: #333;
+            --title-color: #24292e;
+            --subtitle-color: #586069;
+            --accent-color: #e74c3c;
+            --accent-hover: #c0392b;
+            --border-color: #e1e4e8;
+            --card-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --tag-bg: #f1f2f5;
+            --tag-color: #586069;
+            --input-bg: white;
+            --input-border: #e1e4e8;
+            --inactive-tab: #f1f2f5;
+            --inactive-text: #586069;
+        }
+        
+        [data-theme="dark"] {
+            /* Dark mode variables */
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --title-color: #ffffff;
+            --subtitle-color: #b0b0b0;
+            --accent-color: #e74c3c;
+            --accent-hover: #ff6b5b;
+            --border-color: #333333;
+            --card-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+            --hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            --tag-bg: #2c2c2c;
+            --tag-color: #b0b0b0;
+            --input-bg: #2c2c2c;
+            --input-border: #444444;
+            --inactive-tab: #2c2c2c;
+            --inactive-text: #b0b0b0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .logo-section {
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--title-color);
+        }
+        
+        .accent {
+            color: var(--accent-color);
+        }
+        
+        .tagline {
+            color: var(--subtitle-color);
+            font-size: 1.1rem;
+        }
+        
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 60px;
+        }
+        
+        .theme-switch input {
+            display: none;
+        }
+        
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            background-color: white;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .slider-icons {
+            color: white;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            z-index: 1;
+        }
+        
+        .slider-icons.sun {
+            left: 70%;
+        }
+        
+        .slider-icons.moon {
+            left: 30%;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--container-bg);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .tab.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .tab:not(.active) {
+            background-color: var(--inactive-tab);
+            color: var(--inactive-text);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: var(--border-color);
+        }
+        
+        .tab-icon {
+            margin-right: 8px;
+        }
+        
+        .form-container {
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            margin-bottom: 40px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--title-color);
+            transition: color 0.3s;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(231, 76, 60, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .results-title {
+            font-size: 1.8rem;
+            color: var(--title-color);
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        
+        .recommendations {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .manga-card {
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+        }
+        
+        .manga-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .card-image {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .manga-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+        
+        .manga-score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .media-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .manga-title {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            color: var(--title-color);
+            transition: color 0.3s;
+        }
+        
+        .manga-creator {
+            color: var(--subtitle-color);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        
+        .manga-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .genre-tag {
+            background-color: var(--tag-bg);
+            color: var(--tag-color);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .manga-description {
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color 0.3s;
+        }
+        
+        .recommendation-reason {
+            font-size: 0.9rem;
+            color: var(--subtitle-color);
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            transition: color 0.3s, border-color 0.3s;
+        }
+        
+        .manga-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .manga-link:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            color: var(--subtitle-color);
+            font-size: 0.9rem;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .recommendations {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <h1>Otaku<span class="accent">Match</span></h1>
+                <p class="tagline">Discover your next anime, manga, or manhwa obsession</p>
+            </div>
+            
+            <div class="theme-switch-wrapper">
+                <span style="margin-right: 10px; color: var(--subtitle-color);">Theme:</span>
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <span class="slider">
+                        <i class="fas fa-sun slider-icons sun"></i>
+                        <i class="fas fa-moon slider-icons moon"></i>
+                    </span>
+                </label>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-type="anime">
+                <i class="fas fa-tv tab-icon"></i>Anime
+            </div>
+            <div class="tab" data-type="manga">
+                <i class="fas fa-book tab-icon"></i>Manga
+            </div>
+            <div class="tab" data-type="manhwa">
+                <i class="fas fa-scroll tab-icon"></i>Manhwa
+            </div>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <div class="form-container">
+            <form id="recommendForm">
+                <input type="hidden" id="mediaType" value="anime">
+                
+                <div class="form-group">
+                    <label id="titlesLabel">Anime you've enjoyed</label>
+                    <textarea id="titlesInput" placeholder="Enter titles separated by commas (e.g. Naruto, One Piece, Attack on Titan)" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="genresInput">Preferred genres (optional)</label>
+                    <input type="text" id="genresInput" placeholder="Action, Romance, Fantasy, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="excludeInput">Genres to exclude (optional)</label>
+                    <input type="text" id="excludeInput" placeholder="Horror, Ecchi, etc.">
+                </div>
+                
+                <button type="submit" id="findBtn">Find Recommendations</button>
+            </form>
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p id="loadingText">Finding perfect anime matches for you...</p>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h2 class="results-title">Recommended for fans of <span id="baseTitleText" class="accent"></span></h2>
+                <p>Based on MyAnimeList user recommendations and ratings</p>
+            </div>
+            
+            <div class="recommendations" id="recommendationsList"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('recommendForm');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const loadingText = document.getElementById('loadingText');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const recommendationsList = document.getElementById('recommendationsList');
+            const baseTitleText = document.getElementById('baseTitleText');
+            const findBtn = document.getElementById('findBtn');
+            const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+            const mediaTypeTabs = document.querySelectorAll('.tab');
+            const mediaTypeInput = document.getElementById('mediaType');
+            const titlesLabel = document.getElementById('titlesLabel');
+            
+            // Media type change handler
+            mediaTypeTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update active tab
+                    mediaTypeTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update hidden input value
+                    const mediaType = this.getAttribute('data-type');
+                    mediaTypeInput.value = mediaType;
+                    
+                    // Update placeholder text
+                    if (mediaType === 'anime') {
+                        titlesLabel.textContent = 'Anime you\'ve enjoyed';
+                        loadingText.textContent = 'Finding perfect anime matches for you...';
+                    } else if (mediaType === 'manga') {
+                        titlesLabel.textContent = 'Manga you\'ve enjoyed';
+                        loadingText.textContent = 'Finding perfect manga matches for you...';
+                    } else if (mediaType === 'manhwa') {
+                        titlesLabel.textContent = 'Manhwa you\'ve enjoyed';
+                        loadingText.textContent = 'Finding perfect manhwa matches for you...';
+                    }
+                });
+            });
+            
+            // Check for saved theme preference
+            const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+            
+            // If the user has a preference, apply it
+            if (currentTheme) {
+                document.documentElement.setAttribute('data-theme', currentTheme);
+                
+                // Update toggle position
+                if (currentTheme === 'dark') {
+                    toggleSwitch.checked = true;
+                }
+            } else {
+                // Check if user prefers dark mode in their OS settings
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    toggleSwitch.checked = true;
+                }
+            }
+            
+            // Theme switcher function
+            function switchTheme(e) {
+                if (e.target.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }    
+            }
+            
+            // Event listener for theme switch
+            toggleSwitch.addEventListener('change', switchTheme, false);
+            
+            // Form submission handler
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Reset UI
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                loadingIndicator.style.display = 'block';
+                resultsContainer.style.display = 'none';
+                recommendationsList.innerHTML = '';
+                findBtn.disabled = true;
+                
+                // Get form values
+                const titles = document.getElementById('titlesInput').value.trim();
+                const genres = document.getElementById('genresInput').value.trim();
+                const exclude = document.getElementById('excludeInput').value.trim();
+                const mediaType = document.getElementById('mediaType').value;
+                
+                if (!titles) {
+                    showError(`Please enter at least one ${mediaType} title`);
+                    return;
+                }
+                
+                try {
+                    // Prepare request data
+                    const requestData = {
+                        titles: titles.split(',').map(t => t.trim()),
+                        genres: genres ? genres.split(',').map(g => g.trim()) : [],
+                        exclude: exclude ? exclude.split(',').map(e => e.trim()) : [],
+                        mediaType: mediaType
+                    };
+                    
+                    // Make API request
+                    const response = await fetch('/api/recommend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    if (!response.ok) {
+                        let errorText = 'Failed to get recommendations';
+                        
+                        try {
+                            const errorData = await response.json();
+                            errorText = errorData.error || errorText;
+                        } catch (e) {
+                            // If we can't parse JSON, use the status text
+                            errorText = response.statusText;
+                        }
+                        
+                        throw new Error(errorText);
+                    }
+                    
+                    // Parse response
+                    const data = await response.json();
+                    
+                    // Check if we have recommendations
+                    if (!data.recommendations || data.recommendations.length === 0) {
+                        throw new Error(`No ${mediaType} recommendations found. Try another title.`);
+                    }
+                    
+                    // Update base title
+                    baseTitleText.textContent = data.baseTitle || requestData.titles[0];
+                    
+                    // Display recommendations
+                    data.recommendations.forEach(item => {
+                        const card = createMediaCard(item, data.mediaType || mediaType);
+                        recommendationsList.appendChild(card);
+                    });
+                    
+                    // Show results
+                    resultsContainer.style.display = 'block';
+                    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                    findBtn.disabled = false;
+                }
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                loadingIndicator.style.display = 'none';
+                findBtn.disabled = false;
+            }
+            
+            function createMediaCard(item, mediaType) {
+                const card = document.createElement('div');
+                card.className = 'manga-card';
+                
+                // Create genres HTML
+                const genresHTML = item.genres && item.genres.length > 0
+                    ? item.genres.slice(0, 4).map(genre => `<span class="genre-tag">${genre}</span>`).join('')
+                    : '';
+                
+                // Truncate description if too long
+                const description = item.description
+                    ? item.description.length > 300
+                        ? item.description.substring(0, 300) + '...'
+                        : item.description
+                    : 'No description available';
+                
+                // Determine what stats to show based on media type
+                let statsHTML = '';
+                if (mediaType === 'anime') {
+                    statsHTML = `
+                        <div class="stats">
+                            <div class="stat"><i class="fas fa-star"></i> ${item.score || 'N/A'}</div>
+                            <div class="stat"><i class="fas fa-film"></i> ${item.episodes || '?'} episodes</div>
+                        </div>
+                    `;
+                } else {
+                    statsHTML = `
+                        <div class="stats">
+                            <div class="stat"><i class="fas fa-star"></i> ${item.score || 'N/A'}</div>
+                            <div class="stat"><i class="fas fa-book-open"></i> ${item.chapters || '?'} chapters</div>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="card-image">
+                        <img src="${item.image || 'https://via.placeholder.com/350x200?text=No+Image'}" alt="${item.title}">
+                        <div class="media-type-badge">${item.type || mediaType}</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="manga-title">${item.title}</h3>
+                        <div class="manga-creator">by ${item.creator || 'Unknown'}</div>
+                        <div class="manga-genres">${genresHTML}</div>
+                        <p class="manga-description">${description}</p>
+                        ${statsHTML}
+                        <div class="recommendation-reason">${item.whyRecommended}</div>
+                        ${item.url ? `<a href="${item.url}" target="_blank" class="manga-link">View on MyAnimeList</a>` : ''}
+                    </div>
+                `;
+                
+                return card;
+            }
+        });
+    </script>
+</body>
+</html>
